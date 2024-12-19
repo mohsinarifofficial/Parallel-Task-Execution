@@ -50,4 +50,51 @@ def write(file_path,data):
 text = read_pdf("3_1_8_Gajski_137-147_accepted_31.10.2023.pdf")
 print(text)
 write("my.pdf",text)
+ 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+import time
 
+# Initialize WebDriver
+driver = webdriver.Chrome()
+driver.get("https://www.facebook.com/login")
+
+# Login
+driver.find_element(By.ID, "email").send_keys("your_email")
+driver.find_element(By.ID, "pass").send_keys("your_password")
+driver.find_element(By.NAME, "login").click()
+
+# Navigate to Marketplace
+time.sleep(5)
+driver.get("https://www.facebook.com/marketplace")
+time.sleep(5)
+
+# Scroll and Collect Ads
+ad_links = set()  # Use a set to avoid duplicates
+scroll_pause_time = 2  # Pause to allow loading
+last_height = driver.execute_script("return document.body.scrollHeight")
+
+while True:
+    # Find ad elements
+    ads = driver.find_elements(By.XPATH, "//a[contains(@href, '/marketplace/item/')]")
+    for ad in ads:
+        ad_links.add(ad.get_attribute("href"))
+
+    # Scroll down
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(scroll_pause_time)
+
+    # Check if new content loaded
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    if new_height == last_height:
+        break  # Exit loop if no new content is loaded
+    last_height = new_height
+
+# Print all collected ad links
+print(f"Collected {len(ad_links)} ads:")
+for link in ad_links:
+    print(link)
+
+# Close WebDriver
+driver.quit()
